@@ -43,6 +43,23 @@ def clear_screen():
     else:
         os.system('clear')
 
+def displayAllBooks():
+    clear_screen()
+    if not os.path.exists('data_book.csv') or os.stat('data_book.csv').st_size == 0:
+        print("\n[!] The library shelves are empty! Add some books first.")
+    else:
+        try:
+            df = pd.read_csv('data_book.csv')
+            print("==================== CURRENT INVENTORY ====================")
+            # This prints the dataframe without the index numbers on the left
+            print(df.to_string(index=False))
+            print("============================================================")
+            print(f"Total Books in System: {len(df)}")
+        except Exception as e:
+            print(f"Error reading database: {e}")
+            
+    input("\nPress Enter to return to menu...")
+
 def searchBook():
     
     if not os.path.exists('data_book.csv'):
@@ -135,7 +152,8 @@ def main():
         print("      2.ADD A NEW CUSTOMER ENTRY.")
         print("      3.ADD A NEW EMPLOYEE ENTRY." )
         print("      4.SEARCH A BOOK IN DATABASE." )
-        print("      5.EXIT PROGRAM")
+        print("      5.DISPLAY ALL BOOKS IN DATABASE." )
+        print("      6.EXIT PROGRAM")
         choice = input("Enter your choice here (1 as in 1st option and 2 as in 2nd option and so on) \n ===> ")
         if (choice == "1"):
             getDataBook()
@@ -146,6 +164,9 @@ def main():
         elif (choice == "4"):
             searchBook()
         elif (choice == "5"):
+            displayAllBooks()
+        elif (choice == "6"):
+            print("\nThank you for using the Library Management System!")
             break
         else:
             print(f"\n'{choice}' is not a valid option.")
