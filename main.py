@@ -19,6 +19,7 @@ class customerMaster:
         self.customerName = customerName
         self.customerAddress = customerAddress
         self.customerPhone = customerPhone
+        self.customerBooks = []
 
     def __str__(self):
         return f"Customer: {self.customerName} | Address: {self.customerAddress} | Phone: {self.customerPhone}"
@@ -107,7 +108,7 @@ def getDataBook():
 def getDataCustomer():
     customerData = input("Enter customer details (Name Address Phone): ").split()
     if len(customerData) == 3:
-        c1 = customerMaster(customerData[0], customerData[1], int(customerData[2]))
+        c1 = customerMaster(customerData[0], customerData[1], customerData[2])
         df_customer = pd.DataFrame([vars(c1)])
         file_path = 'data_customer.csv'
         df_customer.to_csv(file_path, mode='a', index=False, header=not os.path.exists(file_path))
@@ -128,6 +129,41 @@ def getDataEmployee():
     else:
         print("Error: Please enter all 4 details.")
     answer = input("press enter to go back to the menu")
+def bookCustomer():
+   # 1. Get the Name
+    customername = input("Enter your name: ")
+    
+    # 2. Load the Customer CSV
+    df_customer = pd.read_csv('data_customer.csv')
+
+    # 3. THE GATEKEEPER CHECK
+    # We check if the name exists in the 'customerName' column
+    if customername.lower() not in df_customer['customerName'].str.lower().values:
+        print(f"\n[!] Error: '{customername}' is not in the system.")
+        print("Please use Option 2 from the main menu to add your name first!")
+        input("\nPress Enter to go back...")
+        return # This STOPS the function right here.
+
+    # 4. IF THE CODE REACHES HERE, THE CUSTOMER EXISTS
+    print(f"Welcome back, {customername}!")
+    bookname = input("Which book are you borrowing? ")
+
+    # 5. Handle the 'borrowedBooks' column
+    # If the column doesn't exist yet, Pandas creates it automatically here
+    if 'borrowedBooks' not in df_customer.columns:
+        df_customer['borrowedBooks'] = ""
+
+    # 6. Find the customer's row and add the book name
+    mask = df_customer['customerName'].str.lower() == customername.lower()
+    
+    # Get old list (or empty string if none), then add new book
+    old_list = df_customer.loc[mask, 'borrowedBooks'].fillna("").iloc[0]
+    df_customer.loc[mask, 'borrowedBooks'] = f"{old_list}{bookname}, "
+
+    # 7. Save and Finish
+    df_customer.to_csv('data_customer.csv', index=False)
+    print(f"Success! {bookname} has been added to your record.")
+    input("\nPress Enter...")
     
 def main():
     while (True):
@@ -152,7 +188,8 @@ def main():
         print("      3.ADD A NEW EMPLOYEE ENTRY." )
         print("      4.SEARCH A BOOK IN DATABASE." )
         print("      5.DISPLAY ALL BOOKS IN DATABASE." )
-        print("      6.EXIT PROGRAM")
+        print("      6.BORROW A BOOK.")
+        print("      7. EXIT PROGRAM")
         choice = input("Enter your choice here (1 as in 1st option and 2 as in 2nd option and so on) \n ===> ")
         if (choice == "1"):
             getDataBook()
@@ -165,6 +202,8 @@ def main():
         elif (choice == "5"):
             displayAllBooks()
         elif (choice == "6"):
+            bookCustomer()
+        elif (choice == "7"):
             print("\nThank you for using the Library Management System!")
             break
         else:
