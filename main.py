@@ -51,7 +51,6 @@ def displayAllBooks():
         try:
             df = pd.read_csv('data_book.csv')
             print("==================== CURRENT INVENTORY ====================")
-            # This prints the dataframe without the index numbers on the left
             print(df.to_string(index=False))
             print("============================================================")
             print(f"Total Books in System: {len(df)}")
