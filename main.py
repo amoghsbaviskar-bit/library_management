@@ -19,8 +19,6 @@ class customerMaster:
         self.customerName = customerName
         self.customerAddress = customerAddress
         self.customerPhone = customerPhone
-        self.customerBooks = []
-
     def __str__(self):
         return f"Customer: {self.customerName} | Address: {self.customerAddress} | Phone: {self.customerPhone}"
 
@@ -129,41 +127,75 @@ def getDataEmployee():
     else:
         print("Error: Please enter all 4 details.")
     answer = input("press enter to go back to the menu")
-def bookCustomer():
-   # 1. Get the Name
+def bookBorrow():
     customername = input("Enter your name: ")
-    
-    # 2. Load the Customer CSV
     df_customer = pd.read_csv('data_customer.csv')
-
-    # 3. THE GATEKEEPER CHECK
-    # We check if the name exists in the 'customerName' column
     if customername.lower() not in df_customer['customerName'].str.lower().values:
         print(f"\n[!] Error: '{customername}' is not in the system.")
         print("Please use Option 2 from the main menu to add your name first!")
         input("\nPress Enter to go back...")
-        return # This STOPS the function right here.
-
-    # 4. IF THE CODE REACHES HERE, THE CUSTOMER EXISTS
+        return 
     print(f"Welcome back, {customername}!")
     bookname = input("Which book are you borrowing? ")
-
-    # 5. Handle the 'borrowedBooks' column
-    # If the column doesn't exist yet, Pandas creates it automatically here
     if 'borrowedBooks' not in df_customer.columns:
         df_customer['borrowedBooks'] = ""
 
-    # 6. Find the customer's row and add the book name
     mask = df_customer['customerName'].str.lower() == customername.lower()
-    
-    # Get old list (or empty string if none), then add new book
     old_list = df_customer.loc[mask, 'borrowedBooks'].fillna("").iloc[0]
     df_customer.loc[mask, 'borrowedBooks'] = f"{old_list}{bookname}, "
-
-    # 7. Save and Finish
     df_customer.to_csv('data_customer.csv', index=False)
     print(f"Success! {bookname} has been added to your record.")
     input("\nPress Enter...")
+
+def bookPurchase():
+    if not os.path.exists('data_customer.csv') or not os.path.exists('data_book.csv'):
+        print("\n[!] Error: Database files missing.")
+        input("\nPress Enter to go back...")
+        return
+
+    df_customer = pd.read_csv('data_customer.csv')
+    df_book = pd.read_csv('data_book.csv')
+    if 'loyaltyPoints' not in df_customer.columns:
+        df_customer['loyaltyPoints'] = 0
+
+    customername = input("Enter your name: ")
+
+    if customername.lower() not in df_customer['customerName'].str.lower().values:
+        print(f"\n[!] Error: '{customername}' is not in the system.")
+        return
+    
+    cust_mask = df_customer['customerName'].str.lower() == customername.lower()
+    print(f"Welcome back, {customername}!")
+    
+    bookname = input("Which book are you purchasing? ")
+    
+    if bookname.lower() not in df_book['bookName'].str.lower().values:
+        print(f"\n[!] Error: '{bookname}' is not available.")
+        return
+    
+    book_mask = df_book['bookName'].str.lower() == bookname.lower()
+    price = df_book.loc[book_mask, 'bookPrice'].iloc[0]
+    stock = df_book.loc[book_mask, 'bookStock'].iloc[0]
+
+    if stock <= 0:
+        print("Sorry, out of stock!")
+        return
+
+    confirm = input(f"Price: {price}. Proceed? (yes/no) ")
+    if confirm.lower() == 'yes':
+        df_book.loc[book_mask, 'bookStock'] = stock - 1
+        df_book.to_csv('data_book.csv', index=False)
+        current_points = df_customer.loc[cust_mask, 'loyaltyPoints'].iloc[0]
+        df_customer.loc[cust_mask, 'loyaltyPoints'] = current_points + 1
+        df_customer.to_csv('data_customer.csv', index=False)
+        
+        new_total = current_points + 1
+        print(f"✅ Purchase successful! You earned 1 point. Total points: {new_total}")
+    else:
+        print("Purchase cancelled.")
+    
+    input("\nPress Enter to return...")
+
     
 def main():
     while (True):
@@ -174,7 +206,6 @@ def main():
             try:
                 df_e = pd.read_csv('data_employee.csv')
                 if not df_e.empty:
-                    # Pick one random row
                     random_staff = df_e.sample().iloc[0]
                     display_name = random_staff['employeeName']
                     display_mood = random_staff['employeeBehaviour']
@@ -189,7 +220,8 @@ def main():
         print("      4.SEARCH A BOOK IN DATABASE." )
         print("      5.DISPLAY ALL BOOKS IN DATABASE." )
         print("      6.BORROW A BOOK.")
-        print("      7. EXIT PROGRAM")
+        print("      7.PURCHASE A BOOK.")
+        print("      8. EXIT PROGRAM")
         choice = input("Enter your choice here (1 as in 1st option and 2 as in 2nd option and so on) \n ===> ")
         if (choice == "1"):
             getDataBook()
@@ -202,8 +234,10 @@ def main():
         elif (choice == "5"):
             displayAllBooks()
         elif (choice == "6"):
-            bookCustomer()
+            bookBorrow()
         elif (choice == "7"):
+            bookPurchase()
+        elif (choice == "8"):
             print("\nThank you for using the Library Management System!")
             break
         else:
