@@ -190,11 +190,12 @@ def bookPurchase():
         df_customer.to_csv('data_customer.csv', index=False)
         
         new_total = current_points + 1
-        print(f"✅ Purchase successful! You earned 1 point. Total points: {new_total}")
+        print(f" Purchase successful! You earned 1 point. Total points: {new_total}")
     else:
         print("Purchase cancelled.")
     
     input("\nPress Enter to return...")
+
 
     
 def main():
