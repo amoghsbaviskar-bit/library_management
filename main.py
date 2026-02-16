@@ -212,9 +212,19 @@ def main():
                     display_mood = random_staff['employeeBehaviour']
             except Exception:
                 pass
+        if os.path.exists('data_book.csv') and os.stat('data_book.csv').st_size > 0:
+            try:
+                df_b = pd.read_csv('data_book.csv')
+                if not df_b.empty:
+                    random_book = df_b.sample().iloc[0]
+                    # We format it nicely for the menu
+                    rec_text = f"'{random_book['bookName']}' by {random_book['bookAuthor']}"
+            except Exception:
+                rec_text = "Browsing the shelves..."
         clear_screen()
         print("==================LIBRARY SOFTWARE==================")
         print(f"       EMPLOYEE: {display_name} --> MOOD: {display_mood}")
+        print(f"       MY BOOK RECCOMENDATION: {rec_text}")
         print("      1.ADD A NEW BOOK ENTRY.")
         print("      2.ADD A NEW CUSTOMER ENTRY.")
         print("      3.ADD A NEW EMPLOYEE ENTRY." )

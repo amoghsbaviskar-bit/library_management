@@ -14,13 +14,6 @@ The Cache: All "good stuff" (adding points, borrowing books) happens to this loc
 
 The Dump: To prevent breaking the system, only overwrite the data_customer.csv when the user selects "Exit" or "Logout".
 
-3. Option B: Mood-Based Recommendations (UX Logic)
-The Trigger: This happens automatically the moment a user successfully logs in.
-
-The Randomizer: Use df.sample() to pick one random book from your inventory.
-
-The Interaction: Combine the employeeMaster mood with the random book to give a personalized greeting: "Hey {name}, I'm feeling {mood} today, you should check out {book}!"
-
 4. Loyalty "BOGO" Perk (Reward Logic)
 The Threshold: Set a loyalty point requirement (e.g., 5 points).
 
