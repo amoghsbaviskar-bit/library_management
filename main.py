@@ -127,27 +127,29 @@ def getDataEmployee():
     else:
         print("Error: Please enter all 4 details.")
     answer = input("press enter to go back to the menu")
-def bookBorrow():
-    customername = input("Enter your name: ")
+def bookBorrow(username): 
+
     df_customer = pd.read_csv('data_customer.csv')
-    if customername.lower() not in df_customer['customerName'].str.lower().values:
-        print(f"\n[!] Error: '{customername}' is not in the system.")
-        print("Please use Option 2 from the main menu to add your name first!")
-        input("\nPress Enter to go back...")
-        return 
-    print(f"Welcome back, {customername}!")
+    
+    print(f"\n--- Borrowing Session: {username} ---")
     bookname = input("Which book are you borrowing? ")
+    
+   
     if 'borrowedBooks' not in df_customer.columns:
         df_customer['borrowedBooks'] = ""
 
-    mask = df_customer['customerName'].str.lower() == customername.lower()
+  
+    mask = df_customer['customerName'].str.lower() == username.lower()
+    
+   
     old_list = df_customer.loc[mask, 'borrowedBooks'].fillna("").iloc[0]
     df_customer.loc[mask, 'borrowedBooks'] = f"{old_list}{bookname}, "
     df_customer.to_csv('data_customer.csv', index=False)
-    print(f"Success! {bookname} has been added to your record.")
-    input("\nPress Enter...")
+    
+    print(f"Success! '{bookname}' has been added to your record.")
+    input("\nPress Enter to return to dashboard...")
 
-def bookPurchase():
+def bookPurchase(username): 
     if not os.path.exists('data_customer.csv') or not os.path.exists('data_book.csv'):
         print("\n[!] Error: Database files missing.")
         input("\nPress Enter to go back...")
@@ -155,22 +157,20 @@ def bookPurchase():
 
     df_customer = pd.read_csv('data_customer.csv')
     df_book = pd.read_csv('data_book.csv')
+    
     if 'loyaltyPoints' not in df_customer.columns:
         df_customer['loyaltyPoints'] = 0
 
-    customername = input("Enter your name: ")
-
-    if customername.lower() not in df_customer['customerName'].str.lower().values:
-        print(f"\n[!] Error: '{customername}' is not in the system.")
-        return
     
-    cust_mask = df_customer['customerName'].str.lower() == customername.lower()
-    print(f"Welcome back, {customername}!")
+    
+    cust_mask = df_customer['customerName'].str.lower() == username.lower()
+    print(f"\n--- Purchase Session: {username} ---")
     
     bookname = input("Which book are you purchasing? ")
     
     if bookname.lower() not in df_book['bookName'].str.lower().values:
         print(f"\n[!] Error: '{bookname}' is not available.")
+        input("\nPress Enter...")
         return
     
     book_mask = df_book['bookName'].str.lower() == bookname.lower()
@@ -179,18 +179,19 @@ def bookPurchase():
 
     if stock <= 0:
         print("Sorry, out of stock!")
+        input("\nPress Enter...")
         return
 
     confirm = input(f"Price: {price}. Proceed? (yes/no) ")
     if confirm.lower() == 'yes':
         df_book.loc[book_mask, 'bookStock'] = stock - 1
         df_book.to_csv('data_book.csv', index=False)
+        
         current_points = df_customer.loc[cust_mask, 'loyaltyPoints'].iloc[0]
         df_customer.loc[cust_mask, 'loyaltyPoints'] = current_points + 1
         df_customer.to_csv('data_customer.csv', index=False)
         
-        new_total = current_points + 1
-        print(f" Purchase successful! You earned 1 point. Total points: {new_total}")
+        print(f"Purchase successful! You earned 1 point. Total points: {current_points + 1}")
     else:
         print("Purchase cancelled.")
     
@@ -199,7 +200,45 @@ def bookPurchase():
 
     
 def main():
+    current_user = None
     while (True):
+        if current_user is None:
+            clear_screen()
+            print("================== LIBRARY LOGIN ==================")
+            print("  Welcome! Please identify yourself to enter.")
+            print("  - Type your Name to Login")
+            print("  - Type 'new' to Register a New Account") 
+            print("  - Type 'exit' to shut down")
+            print("====================================================")
+            
+            name_attempt = input("\nEnter choice/name: ").strip()
+
+            if name_attempt.lower() == 'exit':
+                break
+            
+           
+            if name_attempt.lower() == 'new':
+                getDataCustomer()
+                continue
+           
+            if os.path.exists('data_customer.csv'):
+                df_cust = pd.read_csv('data_customer.csv')
+                if name_attempt.lower() in df_cust['customerName'].str.lower().values:
+                    mask = df_cust['customerName'].str.lower() == name_attempt.lower()
+                    current_user = df_cust.loc[mask, 'customerName'].iloc[0]
+                    
+                    print(f"\n[SUCCESS] Access Granted. Welcome, {current_user}!")
+                    input("Press Enter to access the dashboard...")
+                    continue  
+                else:
+                    print(f"\n[!] Error: '{name_attempt}' not found in records.")
+                    print("Please use Option 2 in the main menu (once logged in as Admin) or register.")
+                    input("Press Enter to try again...")
+                    continue
+            else:
+                print("\n[!] Database error: data_customer.csv missing.")
+                input("Press Enter to return...")
+                continue
         display_name = "None"
         display_mood = "Unknown"
         
@@ -217,12 +256,12 @@ def main():
                 df_b = pd.read_csv('data_book.csv')
                 if not df_b.empty:
                     random_book = df_b.sample().iloc[0]
-                    # We format it nicely for the menu
                     rec_text = f"'{random_book['bookName']}' by {random_book['bookAuthor']}"
             except Exception:
                 rec_text = "Browsing the shelves..."
         clear_screen()
         print("==================LIBRARY SOFTWARE==================")
+        print(f"       ACTIVE SESSION: {current_user.upper()}")
         print(f"       EMPLOYEE: {display_name} --> MOOD: {display_mood}")
         print(f"       MY BOOK RECCOMENDATION: {rec_text}")
         print("      1.ADD A NEW BOOK ENTRY.")
@@ -245,9 +284,9 @@ def main():
         elif (choice == "5"):
             displayAllBooks()
         elif (choice == "6"):
-            bookBorrow()
+            bookBorrow(current_user)
         elif (choice == "7"):
-            bookPurchase()
+            bookPurchase(current_user)
         elif (choice == "8"):
             print("\nThank you for using the Library Management System!")
             break
