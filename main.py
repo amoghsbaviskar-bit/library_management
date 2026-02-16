@@ -271,7 +271,8 @@ def main():
         print("      5.DISPLAY ALL BOOKS IN DATABASE." )
         print("      6.BORROW A BOOK.")
         print("      7.PURCHASE A BOOK.")
-        print("      8. EXIT PROGRAM")
+        print("      8.LOGOUT.")  
+        print("      9.EXIT.")  
         choice = input("Enter your choice here (1 as in 1st option and 2 as in 2nd option and so on) \n ===> ")
         if (choice == "1"):
             getDataBook()
@@ -288,6 +289,11 @@ def main():
         elif (choice == "7"):
             bookPurchase(current_user)
         elif (choice == "8"):
+            print(f"\n[LOGOUT] Goodbye, {current_user}!")
+            current_user = None  
+            input("Press Enter to return to the login screen...")
+            continue
+        elif (choice == "9"):
             print("\nThank you for using the Library Management System!")
             break
         else:
