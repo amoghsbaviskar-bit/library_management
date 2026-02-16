@@ -272,7 +272,8 @@ def main():
         print("      6.BORROW A BOOK.")
         print("      7.PURCHASE A BOOK.")
         print("      8.LOGOUT.")  
-        print("      9.EXIT.")  
+        print("      9.EXIT.") 
+        print("====================================================") 
         choice = input("Enter your choice here (1 as in 1st option and 2 as in 2nd option and so on) \n ===> ")
         if (choice == "1"):
             getDataBook()
